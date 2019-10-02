@@ -16,6 +16,7 @@ public class Tools {
 
     static {
         _tools.put(ManifestStateFileEditor.class, "Edit the Manifest state file.");
+        _tools.put(ClusterStateFileEditor.class, "Edit the Cluster state file.");
     }
 
     public static void main(String[] args) throws Exception {
