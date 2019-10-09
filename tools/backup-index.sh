@@ -49,7 +49,7 @@ do
         index_shard_index_dir=$index_shard_dir/index
         for file in `ls $index_shard_index_dir`
         do
-            if [ $file != "write.lock" ]; then
+            if [ $file != "write.lock" ] && [[ $file != segments_* ]]; then
                 cp $index_shard_index_dir/$file $index_target_shard_index_dir
             fi
         done
@@ -60,6 +60,7 @@ do
         cp -r $index_shard_dir/_state $index_tmp_shard_dir
         cp -r $index_shard_dir/translog $index_tmp_shard_dir
         cp $index_shard_dir/index/write.lock $index_tmp_shard_index_dir
+        cp $index_shard_dir/index/segments_* $index_tmp_shard_index_dir
 
         cd $index_tmp_dir
         tar_file=$sub_dir.tar
