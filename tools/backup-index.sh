@@ -4,6 +4,8 @@ path_data=$1
 index_uuid=$2
 target=$3
 
+little_index_file_suffixes=(dii fdx fnm nvm si dvm tip cfe)
+
 current_dir=`pwd`
 
 index_tmp_dir=/tmp/es-index-backup/$index_uuid
@@ -49,9 +51,22 @@ do
         index_shard_index_dir=$index_shard_dir/index
         for file in `ls $index_shard_index_dir`
         do
-            if [ $file != "write.lock" ] && [[ $file != segments_* ]]; then
-                cp $index_shard_index_dir/$file $index_target_shard_index_dir
+            if [ $file == "write.lock" ]; then
+                continue
             fi
+
+            if [[ $file == segments_* ]]; then
+                continue
+            fi
+
+            for suffix in ${little_index_file_suffixes[@]} 
+            do
+                if [[ $file == *.$suffix ]]; then
+                    continue 2
+                fi
+            done
+
+            cp $index_shard_index_dir/$file $index_target_shard_index_dir
         done
 
         index_tmp_shard_dir=$index_tmp_dir/$sub_dir
@@ -59,8 +74,12 @@ do
         mkdir -p $index_tmp_shard_index_dir
         cp -r $index_shard_dir/_state $index_tmp_shard_dir
         cp -r $index_shard_dir/translog $index_tmp_shard_dir
-        cp $index_shard_dir/index/write.lock $index_tmp_shard_index_dir
-        cp $index_shard_dir/index/segments_* $index_tmp_shard_index_dir
+        cp $index_shard_index_dir/write.lock $index_tmp_shard_index_dir
+        cp $index_shard_index_dir/segments_* $index_tmp_shard_index_dir
+        for suffix in ${little_index_file_suffixes[@]} 
+        do
+            cp $index_shard_index_dir/*.$suffix $index_tmp_shard_index_dir
+        done
 
         cd $index_tmp_dir
         tar_file=$sub_dir.tar
