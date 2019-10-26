@@ -4,9 +4,17 @@ path_data=$1
 index_uuid=$2
 target=$3
 
-little_index_file_suffixes=(dii fdx fnm nvm si dvm tip cfe)
-
 current_dir=`pwd`
+
+cd $path_data
+path_data=`pwd`
+cd $current_dir
+
+cd $target
+target=`pwd`
+cd $current_dir
+
+little_index_file_suffixes=(dii fdx fnm nvm si dvm tip cfe)
 
 index_tmp_dir=/tmp/es-index-backup/$index_uuid
 rm -rf $index_tmp_dir
@@ -49,36 +57,33 @@ do
 
         index_shard_dir=$index_dir/$sub_dir
         index_shard_index_dir=$index_shard_dir/index
+        index_tmp_shard_dir=$index_tmp_dir/$sub_dir
+        index_tmp_shard_index_dir=$index_tmp_shard_dir/index
+        mkdir -p $index_tmp_shard_index_dir
+        cp -r $index_shard_dir/_state $index_tmp_shard_dir
+        cp -r $index_shard_dir/translog $index_tmp_shard_dir
+
         for file in `ls $index_shard_index_dir`
         do
             if [ $file == "write.lock" ]; then
+                cp $index_shard_index_dir/$file $index_tmp_shard_index_dir
                 continue
             fi
 
             if [[ $file == segments_* ]]; then
+                cp $index_shard_index_dir/$file $index_tmp_shard_index_dir
                 continue
             fi
 
             for suffix in ${little_index_file_suffixes[@]} 
             do
                 if [[ $file == *.$suffix ]]; then
+                    cp $index_shard_index_dir/$file $index_tmp_shard_index_dir
                     continue 2
                 fi
             done
 
             cp $index_shard_index_dir/$file $index_target_shard_index_dir
-        done
-
-        index_tmp_shard_dir=$index_tmp_dir/$sub_dir
-        index_tmp_shard_index_dir=$index_tmp_shard_dir/index
-        mkdir -p $index_tmp_shard_index_dir
-        cp -r $index_shard_dir/_state $index_tmp_shard_dir
-        cp -r $index_shard_dir/translog $index_tmp_shard_dir
-        cp $index_shard_index_dir/write.lock $index_tmp_shard_index_dir
-        cp $index_shard_index_dir/segments_* $index_tmp_shard_index_dir
-        for suffix in ${little_index_file_suffixes[@]} 
-        do
-            cp $index_shard_index_dir/*.$suffix $index_tmp_shard_index_dir
         done
 
         cd $index_tmp_dir

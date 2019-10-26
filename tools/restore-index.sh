@@ -6,6 +6,14 @@ source=$3
 
 current_dir=`pwd`
 
+cd $path_data
+path_data=`pwd`
+cd $current_dir
+
+cd $source
+source=`pwd`
+cd $current_dir
+
 index_tmp_dir=/tmp/es-index-restore/$index_uuid
 rm -rf $index_tmp_dir
 mkdir -p $index_tmp_dir

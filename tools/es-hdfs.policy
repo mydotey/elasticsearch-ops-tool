@@ -1,0 +1,4 @@
+grant {
+  permission java.io.FilePermission "/home/koqizhao/hadoop/s_hdfs", "read";
+  permission java.io.FilePermission "/home/koqizhao/hadoop/s_hdfs/-", "read";
+}
