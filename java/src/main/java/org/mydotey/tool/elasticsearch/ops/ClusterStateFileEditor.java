@@ -7,6 +7,8 @@ import org.elasticsearch.cluster.metadata.IndexGraveyard;
 import org.elasticsearch.cluster.metadata.IndexGraveyard.Tombstone;
 import org.elasticsearch.cluster.metadata.MetaData;
 import org.elasticsearch.index.Index;
+import org.mydotey.java.StringExtension;
+import org.mydotey.java.collection.CollectionExtension;
 import org.mydotey.tool.elasticsearch.ops.state.StateMetaData;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -34,9 +36,9 @@ public class ClusterStateFileEditor {
 
     static {
         _argumentParser.addArgument("-s", "--" + KEY_SOURCE_FILE).dest(KEY_SOURCE_FILE).required(true);
-        _argumentParser.addArgument("-t", "--" + KEY_TARGET_FILE).dest(KEY_TARGET_FILE).required(true);
-        _argumentParser.addArgument("-n", "--" + KEY_INDEX_NAME).dest(KEY_INDEX_NAME).required(true);
-        _argumentParser.addArgument("-u", "--" + KEY_INDEX_UUID).dest(KEY_INDEX_UUID).required(true);
+        _argumentParser.addArgument("-t", "--" + KEY_TARGET_FILE).dest(KEY_TARGET_FILE).required(false);
+        _argumentParser.addArgument("-n", "--" + KEY_INDEX_NAME).dest(KEY_INDEX_NAME).required(false);
+        _argumentParser.addArgument("-u", "--" + KEY_INDEX_UUID).dest(KEY_INDEX_UUID).required(false);
         _argumentParser.addArgument("-a", "--" + KEY_ACTION).choices(CLEAR_INDEX_DELETION).setDefault(CLEAR_INDEX_DELETION);
     }
 
@@ -58,6 +60,9 @@ public class ClusterStateFileEditor {
             + "index name: %s\nindex uuid: %s\n\n",
             action, sourceFile, targetFile, indexName, indexUUID);
 
+        if (StringExtension.isBlank(targetFile))
+            targetFile = sourceFile;
+
         StateMetaData<MetaData> clusterMetaData = StateMetaData.newClusterMetaData(sourceFile);
         System.out.printf("\nOld State:\n%s\n\n", clusterMetaData.toJson());
         MetaData metaData = clusterMetaData.getMetaData();
@@ -66,10 +71,18 @@ public class ClusterStateFileEditor {
         IndexGraveyard indexGraveyard = (IndexGraveyard) metaData.getCustoms().get(IndexGraveyard.TYPE);
         if (indexGraveyard != null) {
             List<Tombstone> tombstones = indexGraveyard.getTombstones();
-            if (tombstones != null && !tombstones.isEmpty()) {
+            if (!CollectionExtension.isEmpty(tombstones)) {
                 tombstones = new ArrayList<>(tombstones);
-                Index index = new Index(indexName, indexUUID);
-                tombstones.removeIf(t -> index.equals(t.getIndex()));
+                if (!StringExtension.isBlank(indexName) && !StringExtension.isBlank(indexUUID)) {
+                    Index index = new Index(indexName, indexUUID);
+                    tombstones.removeIf(t -> index.equals(t.getIndex()));
+                } else if (StringExtension.isBlank(indexName) && StringExtension.isBlank(indexUUID)) {
+                    tombstones.clear();
+                } else if (StringExtension.isBlank(indexName)) {
+                    tombstones.removeIf(t -> t.getIndex().getUUID().equals(indexUUID));
+                } else {
+                    tombstones.removeIf(t -> t.getIndex().getName().equals(indexName));
+                }
                 IndexGraveyard.Builder indexGraveyardBuilder = IndexGraveyard.builder();
                 Class<IndexGraveyard.Builder> clazz = IndexGraveyard.Builder.class;
                 Method method = clazz.getDeclaredMethod("addBuiltTombstones", List.class);
