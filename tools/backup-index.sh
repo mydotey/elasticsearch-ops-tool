@@ -21,8 +21,7 @@ rm -rf $index_tmp_dir
 mkdir -p $index_tmp_dir
 
 index_target_dir=$target/$index_uuid
-index_target_state_dir=$index_target_dir/_state
-mkdir -p $index_target_state_dir
+mkdir -p $index_target_dir
 
 nodes=`ls $path_data/nodes`
 for node in $nodes
@@ -34,21 +33,22 @@ do
 
     for sub_dir in `ls $index_dir`
     do
+        index_target_shard_dir=$index_target_dir/$sub_dir
+        if [ -d $index_target_shard_dir ]; then
+            continue
+        fi
+        mkdir -p $index_target_shard_dir
+
         if [ "$sub_dir" = "_state" ]; then
             index_state_dir=$index_dir/$sub_dir
             for file in `ls $index_state_dir`
             do
-                index_target_state_file=$index_target_state_dir/$file
+                index_target_state_file=$index_target_shard_dir/$file
                 if [ ! -f $index_target_state_file ]; then
                     cp $index_state_dir/$file $index_target_state_file
                 fi
             done
 
-            continue
-        fi
-
-        index_target_shard_dir=$index_target_dir/$sub_dir
-        if [ -d $index_target_shard_dir ]; then
             continue
         fi
 
