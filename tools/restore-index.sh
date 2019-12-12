@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./file-check.sh
+
 path_data=$1
 index_uuid=$2
 source=$3
@@ -23,14 +25,14 @@ index_source_dir=$source/$index_uuid
 for sub_dir in `ls $index_source_dir`
 do
     if [ "$sub_dir" = "_state" ]; then
-        cp -r $index_source_dir/$sub_dir $index_tmp_dir
+        copy_and_check_dir $index_source_dir/$sub_dir $index_tmp_dir/$sub_dir
         continue
     fi
 
     index_source_shard_dir=$index_source_dir/$sub_dir
 
     tar_file=$sub_dir.tar
-    cp $index_source_shard_dir/$tar_file $index_tmp_dir
+    copy_and_check $index_source_shard_dir/$tar_file $index_tmp_dir/$tar_file
     cd $index_tmp_dir
     tar xf $tar_file
     rm $tar_file
