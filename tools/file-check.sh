@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 copy_retry_times=3
 
 file_sum()
@@ -12,17 +14,21 @@ copy_and_check()
     s_sum=`file_sum $1`
     for i in `seq $copy_retry_times`
     do
-        cp $1 $2
-        t_sum=`file_sum $2`
-        if [ "$s_sum" = "$t_sum" ]; then
-            return 0
+        copy_success=`cp $1 $2 | echo $?`
+        if [ "$copy_success" = "0" ]; then
+            t_sum=`file_sum $2`
+            if [ "$s_sum" = "$t_sum" ]; then
+                return 0
+            fi
+
+            echo "file copy failed: $1, source sum: $s_sum, target sum: $t_sum"
         fi
 
-        echo "file copy failed: $1, source sum: $s_sum, target sum: $t_sum, ${i}th copy times"
+        echo "file copy failed: $1, ${i}th times"
         rm -f $2
     done
 
-    exit 1
+    return 1
 }
 
 copy_and_check_dir()

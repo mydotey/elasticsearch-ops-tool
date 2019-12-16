@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 source ./file-check.sh
 
 path_data=$1
