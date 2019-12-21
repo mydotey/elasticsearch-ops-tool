@@ -35,7 +35,8 @@ do
         continue
     fi
 
-    for sub_dir in `ls $index_dir`
+    d=`ls $index_dir`
+    for sub_dir in $d
     do
         index_target_shard_dir=$index_target_dir/$sub_dir
         if [ -d $index_target_shard_dir ]; then
@@ -45,7 +46,8 @@ do
 
         if [ "$sub_dir" = "_state" ]; then
             index_state_dir=$index_dir/$sub_dir
-            for file in `ls $index_state_dir`
+            d2=`ls $index_state_dir`
+            for file in $d2
             do
                 index_target_state_file=$index_target_shard_dir/$file
                 if [ ! -f $index_target_state_file ]; then
@@ -67,7 +69,8 @@ do
         copy_and_check_dir $index_shard_dir/_state $index_tmp_shard_dir/_state
         copy_and_check_dir $index_shard_dir/translog $index_tmp_shard_dir/translog
 
-        for file in `ls $index_shard_index_dir`
+        d3=`ls $index_shard_index_dir`
+        for file in $d3
         do
             if [ $file == "write.lock" ]; then
                 copy_and_check $index_shard_index_dir/$file $index_tmp_shard_index_dir/$file

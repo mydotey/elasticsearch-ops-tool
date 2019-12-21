@@ -34,7 +34,8 @@ copy_and_check()
 copy_and_check_dir()
 {
     mkdir -p $2
-    for i in `ls $1`
+    d=`ls $1`
+    for i in $d
     do
         copy_and_check $1/$i $2/$i
     done

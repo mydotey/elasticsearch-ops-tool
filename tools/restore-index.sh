@@ -24,7 +24,8 @@ mkdir -p $index_tmp_dir
 
 index_source_dir=$source/$index_uuid
 
-for sub_dir in `ls $index_source_dir`
+d=`ls $index_source_dir`
+for sub_dir in $d
 do
     if [ "$sub_dir" = "_state" ]; then
         copy_and_check_dir $index_source_dir/$sub_dir $index_tmp_dir/$sub_dir
@@ -43,7 +44,8 @@ do
     cd $index_tmp_shard_index_dir
 
     index_source_shard_index_dir=$index_source_shard_dir/index
-    for file in `ls $index_source_shard_index_dir`
+    d2=`ls $index_source_shard_index_dir`
+    for file in $d2
     do
         ln -s $index_source_shard_index_dir/$file $file
     done
