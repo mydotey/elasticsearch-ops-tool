@@ -2,7 +2,7 @@
 
 set -e
 
-source ./file-check.sh
+source ./file-copy.sh
 
 path_data=$1
 index_uuid=$2

@@ -2,7 +2,7 @@
 
 set -e
 
-source ./file-check.sh
+source ./file-copy.sh
 
 path_data=$1
 index_uuid=$2
@@ -18,7 +18,7 @@ cd $target
 target=`pwd`
 cd $current_dir
 
-little_index_file_suffixes=(dii fdx fnm nvm si dvm tip cfe)
+little_index_file_suffixes=(dii fdx fnm nvm si dvm tip cfe liv)
 
 index_tmp_dir=/tmp/es-index-backup/$index_uuid
 rm -rf $index_tmp_dir
@@ -66,8 +66,8 @@ do
         index_tmp_shard_dir=$index_tmp_dir/$sub_dir
         index_tmp_shard_index_dir=$index_tmp_shard_dir/index
         mkdir -p $index_tmp_shard_index_dir
-        copy_and_check_dir $index_shard_dir/_state $index_tmp_shard_dir/_state
-        copy_and_check_dir $index_shard_dir/translog $index_tmp_shard_dir/translog
+
+        ensure_file_exists2 $index_shard_index_dir segments
 
         d3=`ls $index_shard_index_dir`
         for file in $d3
@@ -92,6 +92,12 @@ do
 
             copy_and_check $index_shard_index_dir/$file $index_target_shard_index_dir/$file
         done
+
+        ensure_file_exists $index_shard_dir/_state
+        copy_and_check_dir $index_shard_dir/_state $index_tmp_shard_dir/_state
+
+        ensure_file_exists $index_shard_dir/translog
+        copy_and_check_dir $index_shard_dir/translog $index_tmp_shard_dir/translog
 
         cd $index_tmp_dir
         tar_file=$sub_dir.tar
